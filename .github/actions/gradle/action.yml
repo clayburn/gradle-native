@@ -4,12 +4,6 @@ inputs:
     arguments:
         description: 'Gradle arguments'
         required: true
-    build-cache-username:
-        description: 'Build cache username'
-        required: true
-    build-cache-password:
-        description: 'Build cache password'
-        required: true
     github-token:
         description: 'GitHub token'
         required: true
@@ -23,9 +17,10 @@ runs:
             with:
                 distribution: temurin
                 java-version: 8
-        -   uses: gradle/gradle-build-action@v2
+        -   name: Set up OSS Community Develocity Instance for Gradle
+            uses: gradle/actions/setup-gradle@v6.2.0
             with:
-                arguments: ${{ inputs.arguments }} --no-daemon --continue "-Dgradle.enterprise.url=https://ge.nokee.dev/" "-Dgradle.cache.remote.username=${{ inputs.build-cache-username }}" "-Dgradle.cache.remote.password=${{ inputs.build-cache-password }}" "-Dgradle.cache.remote.push=true"
-                gradle-version: wrapper
-            env:
-                GRADLE_ENTERPRISE_ACCESS_KEY: ${{ inputs.build-scan-access-key }}
+                develocity-access-key: ${{ inputs.build-scan-access-key }}
+        -   name: Run Gradle
+            run: ./gradlew ${{ inputs.arguments }} --no-daemon --continue
+            shell: bash

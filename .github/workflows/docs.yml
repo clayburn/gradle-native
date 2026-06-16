@@ -16,8 +16,6 @@ jobs:
                 uses: ./.github/actions/gradle
                 with:
                     arguments: :docs:publishJbakePublicationToDocsNokeeDevRepository -PskipAllAsciinemaTasks --continue --no-daemon --no-build-cache "-PdocsNokeeDevAccessKey=${{ secrets.AWS_ACCESS_KEY }}" "-PdocsNokeeDevSecretKey=${{ secrets.AWS_SECRET_KEY }}"
-                    build-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
-                    build-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
                     build-scan-access-key: ${{ secrets.BUILD_SCAN_ACCESS_KEY }}
                     github-token: ${{ secrets.GITHUB_TOKEN }}
             -   name: Trigger nokeedev.gitlab.io rebuild (main-only)

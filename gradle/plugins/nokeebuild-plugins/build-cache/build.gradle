@@ -10,4 +10,8 @@ gradlePlugin {
 			implementationClass = 'nokeebuild.buildcache.BuildCachePlugin'
 		}
 	}
+
+	dependencies {
+		compileOnly 'com.gradle:develocity-gradle-plugin'
+	}
 }

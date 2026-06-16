@@ -15,35 +15,29 @@
  */
 package nokeebuild.buildscan;
 
-import com.gradle.scan.plugin.BuildScanExtension;
+import com.gradle.develocity.agent.gradle.scan.BuildScanConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class BuildCacheCustomValueProviderTest {
-	@Mock private BuildCacheCustomValueProvider.Parameters buildCache;
-	@InjectMocks private BuildCacheCustomValueProvider subject;
-	@Mock private BuildScanExtension buildScan;
+	@Mock private BuildScanConfiguration buildScan;
 
 	@Test
 	void tagsBuildScanUsingCachedTagWhenBuildCacheEnabled() {
-		when(buildCache.buildCacheEnabled()).thenReturn(true);
-		subject.execute(buildScan);
+		new BuildCacheCustomValueProvider(true).execute(buildScan);
 		verify(buildScan).tag("CACHED");
 	}
 
 	@Test
 	void doesNotTagBuildScanWhenBuildCacheNotEnabled() {
-		when(buildCache.buildCacheEnabled()).thenReturn(false);
-		subject.execute(buildScan);
+		new BuildCacheCustomValueProvider(false).execute(buildScan);
 		verify(buildScan, never()).tag(any());
 	}
 }

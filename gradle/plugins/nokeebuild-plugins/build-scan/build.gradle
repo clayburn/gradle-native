@@ -12,12 +12,12 @@ gradlePlugin {
 	}
 
 	dependencies {
-		compileOnly 'com.gradle:gradle-enterprise-gradle-plugin'
+		compileOnly 'com.gradle:develocity-gradle-plugin'
 	}
 }
 
 test {
 	dependencies {
-		implementation 'com.gradle:gradle-enterprise-gradle-plugin:3.8.1'
+		implementation 'com.gradle:develocity-gradle-plugin:4.4.3'
 	}
 }

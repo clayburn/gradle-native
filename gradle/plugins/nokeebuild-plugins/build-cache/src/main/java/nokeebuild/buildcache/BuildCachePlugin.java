@@ -15,12 +15,12 @@
  */
 package nokeebuild.buildcache;
 
+import com.gradle.develocity.agent.gradle.DevelocityConfiguration;
 import org.gradle.api.Plugin;
 import org.gradle.api.initialization.Settings;
 import org.gradle.api.provider.ProviderFactory;
 
 import javax.inject.Inject;
-import java.util.Optional;
 
 class BuildCachePlugin implements Plugin<Settings> {
 	private final ProviderFactory providers;
@@ -32,52 +32,21 @@ class BuildCachePlugin implements Plugin<Settings> {
 
 	@Override
 	public void apply(Settings settings) {
-		settings.buildCache(new UseRemoteBuildCache(new RemoteBuildCacheParameters()));
-		settings.buildCache(new UseLocalBuildCache(new LocalBuildCacheParameters()));
-	}
+		final DevelocityConfiguration develocity = settings.getExtensions().getByType(DevelocityConfiguration.class);
+		final boolean isCI = providers.environmentVariable("CI").forUseAtConfigurationTime().isPresent();
+		final boolean hasAccessKey = providers.environmentVariable("DEVELOCITY_ACCESS_KEY").forUseAtConfigurationTime().isPresent()
+			|| providers.environmentVariable("GRADLE_ENTERPRISE_ACCESS_KEY").forUseAtConfigurationTime().isPresent();
 
-	@SuppressWarnings("UnstableApiUsage")
-	private final class RemoteBuildCacheParameters implements UseRemoteBuildCache.RemoteBuildCacheParameters {
-		private static final String GRADLE_CACHE_REMOTE_URL_PROPERTY_NAME = "gradle.cache.remote.url";
-		private static final String GRADLE_CACHE_REMOTE_URL_ENV_NAME = "GRADLE_CACHE_REMOTE_URL";
-		private static final String GRADLE_CACHE_REMOTE_USERNAME_PROPERTY_NAME = "gradle.cache.remote.username";
-		private static final String GRADLE_CACHE_REMOTE_USERNAME_ENV_NAME = "GRADLE_CACHE_REMOTE_USERNAME";
-		private static final String GRADLE_CACHE_REMOTE_PASSWORD_PROPERTY_NAME = "gradle.cache.remote.password";
-		private static final String GRADLE_CACHE_REMOTE_PASSWORD_ENV_NAME = "GRADLE_CACHE_REMOTE_PASSWORD";
-		private static final String GRADLE_CACHE_REMOTE_PUSH_PROPERTY_NAME = "gradle.cache.remote.push";
-
-		@Override
-		public Optional<String> remoteBuildCacheUrl() {
-			return Optional.ofNullable(providers.environmentVariable(GRADLE_CACHE_REMOTE_URL_ENV_NAME).forUseAtConfigurationTime()
-				.orElse(providers.systemProperty(GRADLE_CACHE_REMOTE_URL_PROPERTY_NAME).forUseAtConfigurationTime())
-				.orElse("https://ge.nokee.dev/cache/")
-				.getOrNull());
-		}
-
-		@Override
-		public boolean allowPushToRemote() {
-			return providers.systemProperty(GRADLE_CACHE_REMOTE_PUSH_PROPERTY_NAME).forUseAtConfigurationTime().map(Boolean::parseBoolean).orElse(false).get();
-		}
-
-		@Override
-		public String remoteBuildCacheUsername() {
-			return providers.environmentVariable(GRADLE_CACHE_REMOTE_USERNAME_ENV_NAME).forUseAtConfigurationTime()
-				.orElse(providers.systemProperty(GRADLE_CACHE_REMOTE_USERNAME_PROPERTY_NAME).forUseAtConfigurationTime())
-				.getOrNull();
-		}
-
-		@Override
-		public String remoteBuildCachePassword() {
-			return providers.environmentVariable(GRADLE_CACHE_REMOTE_PASSWORD_ENV_NAME).forUseAtConfigurationTime()
-				.orElse(providers.systemProperty(GRADLE_CACHE_REMOTE_PASSWORD_PROPERTY_NAME).forUseAtConfigurationTime())
-				.getOrNull();
-		}
-	}
-
-	private final class LocalBuildCacheParameters implements UseLocalBuildCache.LocalBuildCacheParameters {
-		@Override
-		public boolean localBuildCacheDisabled() {
-			return false;
-		}
+		settings.buildCache(buildCache -> {
+			buildCache.local(local -> {
+				local.setEnabled(true);
+				local.setRemoveUnusedEntriesAfterDays(Integer.MAX_VALUE);
+			});
+			buildCache.remote(develocity.getBuildCache(), remote -> {
+				remote.setEnabled(true);
+				// Avoid build-cache push errors on PR builds where no access key is present.
+				remote.setPush(isCI && hasAccessKey);
+			});
+		});
 	}
 }

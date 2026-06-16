@@ -18,12 +18,16 @@ package nokeebuild.enterprise;
 import org.gradle.api.Plugin;
 import org.gradle.api.initialization.Settings;
 
-class GradleEnterprisePlugin implements Plugin<Settings> {
-    @Override
-    public void apply(Settings settings) {
-        // ORDERING IS IMPORTANT: We want to configure build scan as soon as possible
-        settings.getPluginManager().apply("nokeebuild.build-scan");
-        settings.getPluginManager().apply("nokeebuild.build-cache");
-		settings.getPluginManager().apply("com.gradle.enterprise");
-    }
+class DevelocityPlugin implements Plugin<Settings> {
+	@Override
+	public void apply(Settings settings) {
+		// ORDERING IS IMPORTANT: Develocity is applied first so that
+		// nokeebuild.build-cache can read the DevelocityConfiguration extension
+		// when wiring the remote cache to develocity.buildCache. CCUD is
+		// applied next so that its custom values land on every Build Scan.
+		settings.getPluginManager().apply("com.gradle.develocity");
+		settings.getPluginManager().apply("com.gradle.common-custom-user-data-gradle-plugin");
+		settings.getPluginManager().apply("nokeebuild.build-scan");
+		settings.getPluginManager().apply("nokeebuild.build-cache");
+	}
 }

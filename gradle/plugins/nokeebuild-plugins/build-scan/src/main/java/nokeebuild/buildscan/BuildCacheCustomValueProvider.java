@@ -15,24 +15,20 @@
  */
 package nokeebuild.buildscan;
 
-import com.gradle.scan.plugin.BuildScanExtension;
+import com.gradle.develocity.agent.gradle.scan.BuildScanConfiguration;
 import org.gradle.api.Action;
 
-final class BuildCacheCustomValueProvider implements Action<BuildScanExtension> {
-	private final Parameters buildCache;
+final class BuildCacheCustomValueProvider implements Action<BuildScanConfiguration> {
+	private final boolean buildCacheEnabled;
 
-	public BuildCacheCustomValueProvider(Parameters buildCache) {
-		this.buildCache = buildCache;
+	BuildCacheCustomValueProvider(boolean buildCacheEnabled) {
+		this.buildCacheEnabled = buildCacheEnabled;
 	}
 
 	@Override
-	public void execute(BuildScanExtension buildScan) {
-		if (buildCache.buildCacheEnabled()) {
+	public void execute(BuildScanConfiguration buildScan) {
+		if (buildCacheEnabled) {
 			buildScan.tag("CACHED");
 		}
-	}
-
-	interface Parameters {
-		boolean buildCacheEnabled();
 	}
 }

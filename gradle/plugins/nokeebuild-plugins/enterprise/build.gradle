@@ -7,13 +7,14 @@ gradlePlugin {
     plugins {
         enterprise {
             id = 'nokeebuild.enterprise'
-            implementationClass = 'nokeebuild.enterprise.GradleEnterprisePlugin'
+            implementationClass = 'nokeebuild.enterprise.DevelocityPlugin'
         }
     }
 
     dependencies {
         runtimeOnly project(':build-cache')
         runtimeOnly project(':build-scan')
-		runtimeOnly 'com.gradle:gradle-enterprise-gradle-plugin'
+		runtimeOnly 'com.gradle:develocity-gradle-plugin'
+		runtimeOnly 'com.gradle:common-custom-user-data-gradle-plugin'
     }
 }
